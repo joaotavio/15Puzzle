@@ -15,6 +15,10 @@ public class Tabuleiro {
     private int h;
     private int[][] estadoFinal;
     
+    static int cont1 = 0;
+    static int cont2 = 0;
+    static int cont3 = 0;
+    
     public static final int TAM_TABULEIRO = 4;
     
     public Tabuleiro(int tabuleiro[][]) {
@@ -34,7 +38,7 @@ public class Tabuleiro {
         this.g = g;
         this.estadoFinal = estadoFinal;
         this.gerarHash();
-        this.h = this.heuristica3();
+        this.h = this.heuristica5();
         appendHeuristicaHash();
     }
     
@@ -117,6 +121,47 @@ public class Tabuleiro {
         return cont;
     }
     
+    //Heurística 2 -  número de peças fora de ordem na sequência numérica das 15 peças, 
+    //seguindo a ordem das posições no tabuleiro
+    private int heuristica2(){
+        int i = 0, j = 1, k = 0, limite2_i = 3, limite2_j = 3, limite1_i = 0, limite1_j = 0;
+        int valor_anterior = tabuleiro[0][0];
+        int heuristica = 0;
+        while (k < 15){
+            if (tabuleiro[i][j] != valor_anterior+1 && valor_anterior != 0){
+                heuristica += 1;
+            }
+            valor_anterior = tabuleiro[i][j];
+            
+            if (i == limite2_i && j != limite1_j){
+                j--;
+                if (j == limite1_j){
+                    limite2_i--;
+                }
+            }
+            else if (j < limite2_j && (j != limite1_j || i == limite1_i) ){
+                j++;
+                if (j == limite2_j){
+                    limite1_i++;
+                }
+            }
+            else if (j == limite2_j){
+                i++;
+                if (i == limite2_i){
+                    limite2_j--;
+                }
+            }
+            else if (j == limite1_j){
+                i--;
+                if (i == limite1_i){
+                    limite1_j++;
+                }
+            }
+            k++;
+        }
+        return heuristica;
+    }
+    
     //Heurística 3 - Distância retangular(Manhattan)
     private int heuristica3() {
         int posicao[][] = new int[TAM_TABULEIRO*TAM_TABULEIRO][2];
@@ -134,13 +179,37 @@ public class Tabuleiro {
                 heuristica += Math.abs(i - posI) + Math.abs(j - posJ);
             }
         }
-        
         return heuristica;
+    }
+    
+    //Heurística 4 - p1*h1 + p2*h2 + p3*h3, p1+p2+p3 = 1 
+    private int heuristica4(){
+        int h1 = heuristica1();
+        int h2 = heuristica2();
+        int h3 = heuristica3();
+        int h = (int) (0.0003*h1 + 0.0097*h2 + 0.99*h3);
+        return h;
+    }
+    
+    //Heurística 5 - max(h1, h2, h3)
+    private int heuristica5(){
+        int h1 = heuristica1();
+        int h2 = heuristica2();
+        int h3 = heuristica3();
+        
+        int h = Math.max(h1, Math.max(h2, h3));
+        if (h == h1)
+            cont1++;
+        if (h == h2) 
+            cont2++;
+        if (h == h3) 
+            cont3++;
+        return h;
     }
     
     public void a_estrela(){
         Tabuleiro resposta = new Tabuleiro(this.estadoFinal);
-        
+
         SortedMap<String, Tabuleiro> abertos =  new TreeMap<String, Tabuleiro>();
         Map<String, Tabuleiro> fechados =  new HashMap<String, Tabuleiro>();
         ArrayList<Tabuleiro> sucessores = null;
@@ -174,19 +243,19 @@ public class Tabuleiro {
                     continue;
                 }
                 
-                int novo_g = t.g + 1;
-                
                 int antigo_g = abertos.containsKey(sucessor.hash) ? abertos.get(sucessor.hash).g : Integer.MAX_VALUE;
-                if (novo_g >= antigo_g){
+                if (sucessor.g >= antigo_g){
                     continue;
                 }
                 
                 abertos.remove(sucessor.hash);
-
-                sucessor.g = novo_g;
                 abertos.put(sucessor.hash, sucessor);
             }
         }
+        
+        System.out.println("H1 = "+cont1);
+        System.out.println("H2 = "+cont2);
+        System.out.println("H3 = "+cont3);
         
         if (achou){
             System.out.println("ACHOU -> "+movimentos+"\nIteracoes -> "+i);

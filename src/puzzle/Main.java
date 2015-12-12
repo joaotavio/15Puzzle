@@ -13,7 +13,7 @@ public class Main {
         int resp[][] = {{1,2,3,4},{12,13,14,5},{11,0,15,6},{10,9,8,7}};
         //int resp[][] = {{1,2,3,4},{5,6,7,8},{9,10,11,12},{13,14,15,0}};
         
-        Tabuleiro t2 = lerArquivo("Caso2.txt", resp);
+        Tabuleiro t2 = lerArquivo("Caso1.txt", resp);
         t2.imprime();
         
         t2.a_estrela();
