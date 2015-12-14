@@ -33,7 +33,7 @@ public class Main {
         int k = 0;
         for (int i = 0; i < Tabuleiro.TAM_TABULEIRO; i++) {
             for (int j = 0; j < Tabuleiro.TAM_TABULEIRO; j++) {
-                tab[i][j] = Short.parseShort(strNums[k]);
+                tab[i][j] = Integer.parseInt(strNums[k]);
                 if (tab[i][j] == 0){
                     linha0 = i;
                     coluna0 = j;

@@ -15,10 +15,6 @@ public class Tabuleiro {
     private int h;
     private int[][] estadoFinal;
     
-    static int cont1 = 0;
-    static int cont2 = 0;
-    static int cont3 = 0;
-    
     public static final int TAM_TABULEIRO = 4;
     
     public Tabuleiro(int tabuleiro[][]) {
@@ -198,12 +194,6 @@ public class Tabuleiro {
         int h3 = heuristica3();
         
         int h = Math.max(h1, Math.max(h2, h3));
-        if (h == h1)
-            cont1++;
-        if (h == h2) 
-            cont2++;
-        if (h == h3) 
-            cont3++;
         return h;
     }
     
@@ -253,12 +243,8 @@ public class Tabuleiro {
             }
         }
         
-        System.out.println("H1 = "+cont1);
-        System.out.println("H2 = "+cont2);
-        System.out.println("H3 = "+cont3);
-        
         if (achou){
-            System.out.println("ACHOU -> "+movimentos+"\nIteracoes -> "+i);
+            System.out.println("ACHOU -> "+movimentos+" movimentos\nIterações -> "+i);
         } else {
             System.out.println("SEM SOLUÇÂO");
         }
