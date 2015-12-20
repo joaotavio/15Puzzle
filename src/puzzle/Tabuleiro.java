@@ -3,10 +3,11 @@ package puzzle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-public class Tabuleiro {
+public class Tabuleiro implements Comparable<Tabuleiro>{
     private int tabuleiro[][];
     private int linha_0;
     private int coluna_0;
@@ -20,7 +21,6 @@ public class Tabuleiro {
     public Tabuleiro(int tabuleiro[][]) {
         this.tabuleiro = tabuleiro;
         this.gerarHash();
-        this.hash = "-" + hash;
     }
 
     public Tabuleiro(int tabuleiro[][], int linha_0, int coluna_0, int estadoFinal[][]) {
@@ -35,7 +35,6 @@ public class Tabuleiro {
         this.estadoFinal = estadoFinal;
         this.gerarHash();
         this.h = this.heuristica5();
-        appendHeuristicaHash();
     }
     
     private void gerarHash(){
@@ -50,23 +49,6 @@ public class Tabuleiro {
     
     public String getHash() {
         return hash;
-    }
-    
-    private void appendHeuristicaHash(){
-        int f = this.h+this.g;
-        hash = f + "-" + hash;
-        if (f >= 10){
-            hash = "a" + hash;
-            if (f >= 100){
-                hash = "a" + hash;
-            }
-        }
-    }
-    
-    public boolean compara(Tabuleiro t){
-        String s1 = t.getHash().substring(t.getHash().indexOf("-"));
-        String s2 = this.getHash().substring(this.getHash().indexOf("-"));
-        return s1.equals(s2);
     }
     
     private ArrayList<Tabuleiro> gerarSucessores(){
@@ -183,7 +165,7 @@ public class Tabuleiro {
         int h1 = heuristica1();
         int h2 = heuristica2();
         int h3 = heuristica3();
-        int h = (int) (0.0003*h1 + 0.0097*h2 + 0.99*h3);
+        int h = (int) (0.0*h1 + 0.05*h2 + 0.95*h3);
         return h;
     }
     
@@ -196,16 +178,56 @@ public class Tabuleiro {
         int h = Math.max(h1, Math.max(h2, h3));
         return h;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 41 * hash + Objects.hashCode(this.hash);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Tabuleiro other = (Tabuleiro) obj;
+        if (!Objects.equals(this.hash, other.hash)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int compareTo(Tabuleiro o) {
+        if (this.hashCode() == o.hashCode()){
+                return 0;
+            }
+            int f1 = this.g + this.h;
+            int f2 = o.g + o.h;
+            if (f1 == f2){
+                return -1;
+            }
+            return f1 - f2;
+    }
     
     public void a_estrela(){
         Tabuleiro resposta = new Tabuleiro(this.estadoFinal);
 
-        SortedMap<String, Tabuleiro> abertos =  new TreeMap<String, Tabuleiro>();
+        SortedSet<Tabuleiro> abertos =  new TreeSet<Tabuleiro>();
+        HashMap<String, Integer> hash_valorG = new HashMap<String, Integer>();
         Map<String, Tabuleiro> fechados =  new HashMap<String, Tabuleiro>();
         ArrayList<Tabuleiro> sucessores = null;
         
         boolean achou = false;
-        abertos.put(this.hash, this);
+        abertos.add(this);
+        hash_valorG.put(this.hash, this.g);
         this.g = 0;
         
         Tabuleiro t;
@@ -216,13 +238,14 @@ public class Tabuleiro {
             i++;
             
             //Extrai o menor valor de f
-            t = abertos.get(abertos.firstKey());
-
-            abertos.remove(t.hash);
+            t = abertos.first();
+            abertos.remove(t);
+            hash_valorG.remove(t.hash);
             
-            if (t.compara(resposta)){
+            if (t.equals(resposta)){
                 movimentos = t.g;
                 achou = true;
+                break;
             }
             
             fechados.put(t.hash, t);
@@ -233,13 +256,14 @@ public class Tabuleiro {
                     continue;
                 }
                 
-                int antigo_g = abertos.containsKey(sucessor.hash) ? abertos.get(sucessor.hash).g : Integer.MAX_VALUE;
+                int antigo_g = hash_valorG.containsKey(sucessor.hash) ? hash_valorG.get(sucessor.hash) : Integer.MAX_VALUE;
                 if (sucessor.g >= antigo_g){
                     continue;
                 }
                 
-                abertos.remove(sucessor.hash);
-                abertos.put(sucessor.hash, sucessor);
+                abertos.remove(sucessor);
+                abertos.add(sucessor);
+                hash_valorG.put(sucessor.hash, sucessor.g);
             }
         }
         
