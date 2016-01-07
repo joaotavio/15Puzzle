@@ -165,7 +165,7 @@ public class Tabuleiro implements Comparable<Tabuleiro>{
         int h1 = heuristica1();
         int h2 = heuristica2();
         int h3 = heuristica3();
-        int h = (int) (0.0*h1 + 0.05*h2 + 0.95*h3);
+        int h = (int) (0.02*h1 + 0.03*h2 + 0.95*h3);
         return h;
     }
     
@@ -234,7 +234,7 @@ public class Tabuleiro implements Comparable<Tabuleiro>{
         int movimentos = 0;
         int i = 0;
         while (!abertos.isEmpty() && !achou){
-            System.out.println("I = "+i);
+            //System.out.println("I = "+i);
             i++;
             
             //Extrai o menor valor de f
@@ -242,14 +242,14 @@ public class Tabuleiro implements Comparable<Tabuleiro>{
             abertos.remove(t);
             hash_valorG.remove(t.hash);
             
+            fechados.put(t.hash, t);
+            
             if (t.equals(resposta)){
                 movimentos = t.g;
                 achou = true;
                 break;
             }
             
-            fechados.put(t.hash, t);
-
             sucessores = t.gerarSucessores();
             for (Tabuleiro sucessor : sucessores) {
                 if (fechados.containsKey(sucessor.hash)){

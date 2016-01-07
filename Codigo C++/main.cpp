@@ -8,6 +8,8 @@
 #include <list>
 #include <limits.h>
 #include <cmath>
+#include <chrono>
+#include <stdio.h>
 
 using namespace std;
 
@@ -129,7 +131,7 @@ int Tabuleiro::heuristica2(){
     vetor[12] = tabuleiro[1][1]; vetor[13] = tabuleiro[1][2]; vetor[14] = tabuleiro[2][2];
     vetor[15] = tabuleiro[2][1];
     
-    for (int i = 1; i < 16; i++) {
+    for (int i = 0; i < 16; i++) {
         if (vetor[i] != (vetor[i-1]+1) && vetor[i-1] != 0){
             h2++;
         }
@@ -181,13 +183,10 @@ bool operator<(const Tabuleiro &t1, const Tabuleiro &t2){
     int f1 = t1.g + t1.h;
     int f2 = t2.g + t2.h;
     if (f1 == f2) {
-        if (hash_valorG.find(t2.hash) != hash_valorG.end()){
+        if (hash_valorG.find(t1.hash) != hash_valorG.end()){
             return true;
         }
-        else {
-            return false;
-        }
-        
+        return false;
     }
     return f1 < f2;
 }
@@ -209,13 +208,14 @@ void a_estrela(Tabuleiro s){
     
     int movimentos = 0;
     int i = 0;
-    
     while (!abertos.empty() && !achou){
         //printf("I: %d\n", i++);
         i++;
+        
         Tabuleiro atual = *abertos.begin();
-        abertos.erase(atual);
+        abertos.erase(abertos.begin());
         hash_valorG.erase(atual.hash);
+        
         fechados.insert(make_pair(atual.hash, atual));
         
         if (atual == resposta){
@@ -223,6 +223,7 @@ void a_estrela(Tabuleiro s){
             achou = true;
             break;
         }
+        
         sucessores = atual.gerarSucessores();
         for (it = sucessores.begin(); it != sucessores.end(); it++){
             if (fechados.find(it->hash) != fechados.end()){
@@ -236,37 +237,46 @@ void a_estrela(Tabuleiro s){
             
             abertos.erase(*it);
             abertos.insert(*it);
+            hash_valorG.erase(it->hash);
             hash_valorG.insert(make_pair(it->hash, it->g));
         }
     }
     
     if (achou){
-        printf("\nACHOU -> %d\nITERACOES: %d\n", movimentos, i);
+        printf("ACHOU -> %d\nITERACOES: %d\n", movimentos, i);
     } else {
         printf("NAO ACHOU");
     }
 }
 
 Tabuleiro lerEntrada(){
+    FILE* f = fopen("Caso1.txt", "r");
     int tabuleiro[TAM_TABULEIRO][TAM_TABULEIRO];
     int linha0, coluna0;
     for (int i = 0; i < TAM_TABULEIRO; i++) {
         for (int j = 0; j < TAM_TABULEIRO; j++) {
-            scanf("%d", &tabuleiro[i][j]);
+            fscanf(f, "%d", &tabuleiro[i][j]);
             if (tabuleiro[i][j] == 0){
                 linha0 = i;
                 coluna0 = j;
             }
         }
     }
+    
+    fclose(f);
     Tabuleiro t(tabuleiro, linha0, coluna0);
     return t;
 }
 
+typedef std::chrono::high_resolution_clock Clock;
+
 int main(int argc, char** argv) {
     Tabuleiro t = lerEntrada();
 
+    auto inicio = Clock::now();
     a_estrela(t);
-    
+    auto fim = Clock::now();
+    cout << "Tempo: " << std::chrono::duration_cast<std::chrono::milliseconds>(fim - inicio).count() << " ms\n";
+
     return 0;
 }
