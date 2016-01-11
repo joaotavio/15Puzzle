@@ -212,7 +212,9 @@ public class Tabuleiro implements Comparable<Tabuleiro>{
             int f1 = this.g + this.h;
             int f2 = o.g + o.h;
             if (f1 == f2){
-                return -1;
+                if (this.h == o.h)
+                    return -1;
+                return this.h - o.h;
             }
             return f1 - f2;
     }
